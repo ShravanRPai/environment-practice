@@ -20,8 +20,6 @@ jobs:
       github.event.pull_request.base.ref == 'main' &&
       github.event.pull_request.head.ref == 'live'
     uses: ./.github/workflows/deploy.yml
-    with:
-      ref: ${{ github.event.pull_request.head.sha }}
     secrets: inherit
 
   create-release-branch:
