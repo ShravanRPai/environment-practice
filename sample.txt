@@ -1,0 +1,2 @@
+Sample text file
+Trying to push to a branch that is supposed to be read-only
