@@ -1,5 +1,5 @@
 name: Call Deploy and Create Subversion Branch
-run-name: Jobs Invocation after PR ${{ github.event.pull_request.id }} approval
+run-name: Jobs Invocation after PR ${{ github.event.pull_request.number }} approval
 
 on:
   pull_request:
