@@ -49,6 +49,7 @@ jobs:
           if [ -z "$latest" ]; then
             latest="1.0"
           fi
+          echo "latest=${latest}"
 
           major="${latest%%.*}"
           minor="${latest##*.}"
@@ -60,6 +61,7 @@ jobs:
             next_branch="release/v${next_major}.0"
           fi
 
+          echo "next_branch=${next_branch}"
           echo "next_branch=${next_branch}" >> "$GITHUB_OUTPUT"
 
       - name: Create and push release branch
