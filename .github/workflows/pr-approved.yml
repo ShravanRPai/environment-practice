@@ -58,6 +58,7 @@ jobs:
           elif [[ "$current_branch" == "main" ]]; then
             next_major=$((major + 1))
             next_branch="release/v${next_major}.0"
+          fi
 
           echo "next_branch=${next_branch}" >> "$GITHUB_OUTPUT"
 

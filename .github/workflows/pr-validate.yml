@@ -1,5 +1,5 @@
-name: Validate PR raised for main
-run-name: Validate PR raised for main
+name: Validate PR raised
+run-name: Validate PR raised for ${{ github.base_ref }}
 
 on:
   pull_request:
