@@ -1,10 +1,11 @@
 name: Call Deploy and Create Subversion Branch
-run-name: Jobs Invocation after PR ${{ github.event.pull_request.number }} approval
+run-name: Jobs Invocation after PR #${{ github.event.pull_request.number }} approval
 
 on:
   pull_request:
     branches:
       - main
+      - beta
     types:
       - closed
 
@@ -14,21 +15,14 @@ permissions:
   actions: read
 
 jobs:
-  deploy-job:
-    if: >
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.base.ref == 'main' &&
-      github.event.pull_request.head.ref == 'live'
-    uses: ./.github/workflows/deploy.yml
-    secrets: inherit
-
   create-release-branch:
     if: >
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.base.ref == 'main' &&
-      github.event.pull_request.head.ref == 'live'
-    needs: deploy-job
+      github.event.pull_request.merged == true && (
+        (github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta') ||
+        (github.event.pull_request.base.ref == 'beta' && github.event.pull_request.head.ref == 'live')
+      )
     runs-on: ubuntu-latest
+    environment: practice-environment
 
     permissions:
       contents: write
@@ -50,6 +44,7 @@ jobs:
             | grep -E '^[0-9]+\.[0-9]+$' \
             | sort -V \
             | tail -n 1)
+          current_branch=${{ github.base_ref }}
 
           if [ -z "$latest" ]; then
             latest="1.0"
@@ -57,8 +52,12 @@ jobs:
 
           major="${latest%%.*}"
           minor="${latest##*.}"
-          next_minor=$((minor + 1))
-          next_branch="release/v${major}.${next_minor}"
+          if [[ "$current_branch" == "beta" ]]; then
+            next_minor=$((minor + 1))
+            next_branch="release/v${major}.${next_minor}"
+          elif [[ "$current_branch" == "main" ]]; then
+            next_major=$((major + 1))
+            next_branch="release/v${next_major}.0"
 
           echo "next_branch=${next_branch}" >> "$GITHUB_OUTPUT"
 

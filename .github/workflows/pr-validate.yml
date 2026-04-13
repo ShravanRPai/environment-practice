@@ -1,0 +1,23 @@
+name: Validate PR raised for main
+run-name: Validate PR raised for main
+
+on:
+  pull_request:
+    branches:
+      - main
+      - beta
+
+jobs:
+  validate-head:
+    runs-on: ubuntu-latest
+    environment: practice-environment
+
+    steps:
+      - name: Error out if source branch is wrong
+        if: (github.base_ref == 'main' && github.head_ref != 'beta') || (github.base_ref == 'beta' && github.head_ref != 'live')
+        run: |
+          echo "[ERROR]: Source branch '${{ github.base_ref }}' is not allowed to merge into '${{ github.base_ref }}'!"
+          echo "Allowed combinations:"
+          echo "live --> beta"
+          echo "beta --> main"
+          exit 1
