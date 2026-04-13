@@ -1,0 +1,45 @@
+name: Deploy to environment
+run-name: Deploy to practice-environment and script validation
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy-job:
+    runs-on: ubuntu-latest
+    environment: practice-environment
+
+    steps:
+      - run: |
+          echo "Job started."
+          echo "Event: ${{ github.event_name }} on ${{ github.ref }} branch of ${{ github.repository }} by ${{ github.actor }}"
+          echo "Running on ${{ runner.name }} Runner with ${{ runner.os }} OS"
+          echo "Repository ${{ github.repository }} deployed at ${{ github.path }}"
+      
+      - name: Deploy repository and checkout to branch ${{ github.ref }}
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+      
+      - name: Deploy Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      
+      - name: Install dependencies, if any
+        run: if [[ -f requirements.txt ]]; then python -m pip install -r requirements.txt; else echo "No dependencies."; fi
+      
+      - name: Run main.py
+        run: python main.py
+
+      - run: |
+          echo "Job ${{ job.check_run_id }} Status: ${{ job.status }}"

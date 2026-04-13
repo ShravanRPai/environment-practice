@@ -1,0 +1,67 @@
+name: Call Deploy and Create Subversion Branch
+run-name: Jobs Invocation after PR ${{ github.event.pull_request.id }} approval
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+  pull-requests: read
+  actions: read
+
+jobs:
+  deploy-job:
+    if: >
+      github.event.review.state == 'approved' &&
+      github.event.pull_request.base.ref == 'main'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+    secrets: inherit
+
+  create-release-branch:
+    if: >
+      github.event.review.state == 'approved' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'live'
+    needs: deploy-job
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout approved commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Compute next release branch
+        id: version
+        run: |
+          git fetch --all --prune
+
+          latest=$(git branch -r --list 'origin/release/v*' \
+            | sed 's#origin/release/v##' \
+            | grep -E '^[0-9]+\.[0-9]+$' \
+            | sort -V \
+            | tail -n 1)
+
+          if [ -z "$latest" ]; then
+            latest="1.0"
+          fi
+
+          major="${latest%%.*}"
+          minor="${latest##*.}"
+          next_minor=$((minor + 1))
+          next_branch="release/v${major}.${next_minor}"
+
+          echo "next_branch=${next_branch}" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push release branch
+        run: |
+          git checkout -b "${{ steps.version.outputs.next_branch }}"
+          git push origin "${{ steps.version.outputs.next_branch }}"
+          git checkout main
