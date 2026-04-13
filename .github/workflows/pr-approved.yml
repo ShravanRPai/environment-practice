@@ -2,8 +2,11 @@ name: Call Deploy and Create Subversion Branch
 run-name: Jobs Invocation after PR ${{ github.event.pull_request.id }} approval
 
 on:
-  pull_request_review:
-    types: [submitted]
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
 
 permissions:
   contents: write
@@ -13,8 +16,9 @@ permissions:
 jobs:
   deploy-job:
     if: >
-      github.event.review.state == 'approved' &&
-      github.event.pull_request.base.ref == 'main'
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'live'
     uses: ./.github/workflows/deploy.yml
     with:
       ref: ${{ github.event.pull_request.head.sha }}
@@ -22,7 +26,7 @@ jobs:
 
   create-release-branch:
     if: >
-      github.event.review.state == 'approved' &&
+      github.event.pull_request.merged == true &&
       github.event.pull_request.base.ref == 'main' &&
       github.event.pull_request.head.ref == 'live'
     needs: deploy-job
