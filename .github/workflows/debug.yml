@@ -3,6 +3,11 @@ run-name: "Debug jobs triggered on Pull Requests"
 
 on: pull_request
 
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
 jobs:
   debug:
     runs-on: ubuntu-latest
