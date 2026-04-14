@@ -41,6 +41,7 @@ jobs:
 
           latest=$(git branch -r --list 'origin/release/v*' \
             | sed 's#origin/release/v##' \
+            | tr -d " " \
             | grep -E '^[0-9]+\.[0-9]+$' \
             | sort -V \
             | tail -n 1)
