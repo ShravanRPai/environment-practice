@@ -1,11 +1,15 @@
 name: Validate PR raised
-run-name: Validate PR raised for ${{ github.base_ref }}
+run-name: Validate PR raised for ${{ github.base_ref }} branch
 
 on:
   pull_request:
     branches:
       - main
       - beta
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   validate-head:
@@ -16,7 +20,8 @@ jobs:
       - name: Error out if source branch is wrong
         if: (github.base_ref == 'main' && github.head_ref != 'beta') || (github.base_ref == 'beta' && github.head_ref != 'live')
         run: |
-          echo "[ERROR]: Source branch '${{ github.base_ref }}' is not allowed to merge into '${{ github.base_ref }}'!"
+          echo "[ERROR]: Source branch '${{ github.head_ref }}' is not allowed to merge into '${{ github.base_ref }}'!"
+          echo "[ERROR]: Source branch '${{ github.event.pull_request.head.ref }}' is not allowed to merge into '${{ github.event.pull_request.base.ref }}'!"
           echo "Allowed combinations:"
           echo "live --> beta"
           echo "beta --> main"

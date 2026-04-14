@@ -41,6 +41,7 @@ jobs:
 
           latest=$(git branch -r --list 'origin/release/v*' \
             | sed 's#origin/release/v##' \
+            | tr -d " " \
             | grep -E '^[0-9]+\.[0-9]+$' \
             | sort -V \
             | tail -n 1)
@@ -49,6 +50,7 @@ jobs:
           if [ -z "$latest" ]; then
             latest="1.0"
           fi
+          echo "latest=${latest}"
 
           major="${latest%%.*}"
           minor="${latest##*.}"
@@ -60,6 +62,7 @@ jobs:
             next_branch="release/v${next_major}.0"
           fi
 
+          echo "next_branch=${next_branch}"
           echo "next_branch=${next_branch}" >> "$GITHUB_OUTPUT"
 
       - name: Create and push release branch
